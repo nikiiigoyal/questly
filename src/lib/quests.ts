@@ -221,6 +221,34 @@ type RawLevel = {
 const str = (v: unknown, fallback = ""): string =>
   typeof v === "string" && v.trim() ? v.trim() : fallback;
 
+function normalizeQuiz(l: RawLevel): QuizLevel | null {
+  const options = Array.isArray(l?.options)
+    ? (l.options as unknown[])
+        .map((o) => str(o))
+        .filter(Boolean)
+        .slice(0, 4)
+    : [];
+  if (options.length < 2) return null;
+
+  let idx =
+    typeof l?.correctIndex === "number" ? Math.round(l.correctIndex) : -1;
+  if (idx < 0 || idx >= options.length) {
+    // Some models return the answer as text instead of an index — try to match it.
+    const answerText = str(l?.answer).toLowerCase();
+    const matched = options.findIndex((o) => o.toLowerCase() === answerText);
+    idx = matched;
+  }
+  if (idx < 0 || idx >= options.length) return null;
+
+  return {
+    type: "quiz",
+    question: str(l?.question, "Quick question"),
+    options,
+    correctIndex: idx,
+    explanation: str(l?.explanation),
+  };
+}
+
 /**
  * Validates and repairs the JSON Gemini returns, level by level. Anything
  * malformed is dropped; if too little survives we throw and the API route
@@ -245,21 +273,9 @@ export function normalizeGeminiQuest(raw: unknown, topic: string): Quest {
         emoji: str(l?.emoji, "✨"),
         text: str(l?.text),
       });
-    } else if (type === "quiz" && Array.isArray(l?.options)) {
-      const options = (l.options as unknown[])
-        .map((o) => str(o))
-        .filter(Boolean)
-        .slice(0, 4);
-      const idx =
-        typeof l?.correctIndex === "number" ? Math.round(l.correctIndex) : -1;
-      if (options.length < 2 || idx < 0 || idx >= options.length) continue;
-      levels.push({
-        type: "quiz",
-        question: str(l?.question, "Quick question"),
-        options,
-        correctIndex: idx,
-        explanation: str(l?.explanation),
-      });
+    } else if (type === "quiz") {
+      const quiz = normalizeQuiz(l);
+      if (quiz) levels.push(quiz);
     } else if (type === "truefalse" && str(l?.question)) {
       levels.push({
         type: "truefalse",
@@ -270,7 +286,14 @@ export function normalizeGeminiQuest(raw: unknown, topic: string): Quest {
     }
   }
 
-  if (levels.length < 4 || !levels.some((l) => l.type === "quiz")) {
+  // Accept a slightly thinner quest rather than rejecting the generation —
+  // newer "thinking" models occasionally return 4-5 levels instead of 6.
+  const hasQuiz = levels.some((l) => l.type === "quiz");
+  if (levels.length < 3 || !hasQuiz) {
+    console.error(
+      "Rejected quest payload:",
+      JSON.stringify(raw).slice(0, 600)
+    );
     throw new Error("Gemini returned too few valid levels");
   }
 

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Flame, Search, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import { loadProgress, type Progress } from "@/lib/progress";
-import { isMuted, setMuted } from "@/lib/sounds";
+import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
 
 const CATEGORIES = [
   { name: "History", emoji: "🏛️", sample: "Mughal Empire" },
@@ -33,13 +33,16 @@ export default function Home() {
   const [muted, setMutedState] = useState(false);
 
   useEffect(() => {
+    void primeSounds();
     setProgress(loadProgress());
     setMutedState(isMuted());
   }, []);
 
   const start = (t: string) => {
-    const clean = t.trim();
-    if (!clean) return;
+    playSound("tap");
+    let clean = t.trim();
+    // Empty search should never be a dead click — pick a surprise topic.
+    if (!clean) clean = TRENDING[Math.floor(Math.random() * TRENDING.length)];
     router.push(`/quest?topic=${encodeURIComponent(clean)}`);
   };
 
@@ -47,6 +50,7 @@ export default function Home() {
     const next = !muted;
     setMuted(next);
     setMutedState(next);
+    if (!next) playSound("tap");
   };
 
   return (
@@ -59,7 +63,7 @@ export default function Home() {
         <button
           onClick={toggleSound}
           aria-label="Toggle sound"
-          className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-line"
         >
           {muted ? <VolumeX size={22} /> : <Volume2 size={22} />}
         </button>
@@ -74,12 +78,12 @@ export default function Home() {
           🦚
         </div>
         <h1 className="mt-4 text-3xl font-bold">Namaste, explorer!</h1>
-        <p className="mx-auto mt-2 max-w-md text-lg text-gray-500">
+        <p className="mx-auto mt-2 max-w-md text-lg text-muted">
           Search anything. Get an instant 5-minute quest. Keep your streak alive.
         </p>
         <div className="mt-4 flex items-center justify-center gap-3">
-          <span className="flex items-center gap-1.5 rounded-full bg-orange-50 px-4 py-2 font-bold text-orange-500">
-            <Flame size={18} className="fill-orange-400 text-orange-400" />
+          <span className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox">
+            <Flame size={18} className="fill-fox text-fox" />
             {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
           </span>
           <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
@@ -97,13 +101,13 @@ export default function Home() {
       >
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-faint" />
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && start(topic)}
               placeholder="Learn about anything… e.g. monsoons"
-              className="w-full rounded-2xl border-2 border-gray-200 bg-white py-4 pl-12 pr-4 text-lg outline-none transition-colors placeholder:text-gray-300 focus:border-brand"
+              className="w-full rounded-2xl border-2 border-line bg-white py-4 pl-12 pr-4 text-lg outline-none transition-colors placeholder:text-faint focus:border-brand"
             />
           </div>
           <ChunkyButton onClick={() => start(topic)} aria-label="Generate quest" className="shrink-0">
@@ -112,14 +116,14 @@ export default function Home() {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1 text-sm font-semibold text-gray-400">
+          <span className="flex items-center gap-1 text-sm font-semibold text-faint">
             <Sparkles size={15} /> Trending:
           </span>
           {TRENDING.map((t) => (
             <button
               key={t}
               onClick={() => start(t)}
-              className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-200 hover:text-foreground"
+              className="rounded-full border-2 border-line bg-white px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-faint hover:text-foreground"
             >
               {t}
             </button>
@@ -139,17 +143,17 @@ export default function Home() {
             <button
               key={c.name}
               onClick={() => start(c.sample)}
-              className="rounded-2xl border-2 border-b-4 border-gray-200 bg-white p-4 text-left transition-all hover:border-gray-300 active:translate-y-[2px] active:border-b-2"
+              className="rounded-2xl border-2 border-b-4 border-line bg-white p-4 text-left transition-all hover:border-faint active:translate-y-[2px] active:border-b-2"
             >
               <div className="text-4xl">{c.emoji}</div>
               <div className="mt-2 font-bold">{c.name}</div>
-              <div className="text-sm text-gray-400">e.g. {c.sample}</div>
+              <div className="text-sm text-faint">e.g. {c.sample}</div>
             </button>
           ))}
         </div>
       </motion.section>
 
-      <footer className="mt-12 text-center text-xs text-gray-300">
+      <footer className="mt-12 text-center text-xs text-faint">
         Built for the AI Builders Hackathon 2026 · working name “questly”
       </footer>
     </main>

@@ -8,7 +8,7 @@ import { ArrowLeft, Check, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import ProgressBar from "@/components/ProgressBar";
 import { levelXp, SAMPLE_TOPICS, type Quest, type QuestLevel } from "@/lib/quests";
-import { isMuted, playSound, setMuted } from "@/lib/sounds";
+import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
 import { recordQuestComplete } from "@/lib/progress";
 
 type Status = "loading" | "error" | "playing" | "done";
@@ -73,6 +73,7 @@ export default function QuestPage() {
   }, []);
 
   useEffect(() => {
+    void primeSounds();
     setMutedState(isMuted());
     void load();
   }, [load]);
@@ -182,6 +183,7 @@ export default function QuestPage() {
     const next = !muted;
     setMuted(next);
     setMutedState(next);
+    if (!next) playSound("tap");
   };
 
   return (
@@ -190,7 +192,7 @@ export default function QuestPage() {
         <button
           onClick={() => router.push("/")}
           aria-label="Back home"
-          className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-line"
         >
           <ArrowLeft size={22} />
         </button>
@@ -217,14 +219,14 @@ export default function QuestPage() {
         <button
           onClick={toggleSound}
           aria-label="Toggle sound"
-          className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100"
+          className="rounded-full p-2 text-faint transition-colors hover:bg-line"
         >
           {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
         </button>
       </header>
 
       {note && (
-        <div className="mb-4 rounded-2xl bg-sky-soft px-4 py-2.5 text-center text-sm font-semibold text-sky-dark">
+        <div className="mb-4 rounded-2xl bg-beetle-soft px-4 py-2.5 text-center text-sm font-semibold text-beetle-dark">
           {note}
         </div>
       )}
@@ -238,7 +240,7 @@ export default function QuestPage() {
                 ? "bg-brand text-white"
                 : i === index
                   ? "animate-pop bg-white text-brand ring-4 ring-brand"
-                  : "bg-gray-200 text-gray-400"
+                  : "bg-line text-faint"
             }`}
           >
             {i < index ? <Check size={16} /> : i + 1}
@@ -255,10 +257,13 @@ export default function QuestPage() {
           transition={{ duration: 0.25 }}
         >
           {level.type === "story" ? (
-            <div className="rounded-3xl border-2 border-gray-200 bg-white p-8 text-center">
+            <div className="rounded-3xl border-2 border-line bg-white p-8 text-center">
               <div className="text-6xl">{level.emoji}</div>
               <h2 className="mt-4 text-2xl font-bold">{level.title}</h2>
-              <p className="mt-3 text-lg leading-relaxed text-gray-500">{level.text}</p>
+              <p className="mt-3 text-lg leading-relaxed text-muted">{level.text}</p>
+              <ChunkyButton onClick={nextLevel} className="mt-6 w-full">
+                Continue
+              </ChunkyButton>
             </div>
           ) : (
             <div>
@@ -281,8 +286,8 @@ export default function QuestPage() {
                             : isWrongPick
                               ? "animate-shake border-berry bg-berry-soft text-berry-dark"
                               : selected !== null
-                                ? "border-gray-200 bg-white opacity-60"
-                                : "border-gray-200 bg-white hover:bg-gray-50 active:translate-y-[2px] active:border-b-2"
+                                ? "border-line bg-white opacity-60"
+                                : "border-line bg-white hover:bg-page active:translate-y-[2px] active:border-b-2"
                         }`}
                       >
                         {opt}
@@ -306,8 +311,8 @@ export default function QuestPage() {
                             : isWrongPick
                               ? "animate-shake border-berry bg-berry-soft text-berry-dark"
                               : tfChoice !== null
-                                ? "border-gray-200 bg-white opacity-60"
-                                : "border-gray-200 bg-white hover:bg-gray-50 active:translate-y-[2px] active:border-b-2"
+                                ? "border-line bg-white opacity-60"
+                                : "border-line bg-white hover:bg-page active:translate-y-[2px] active:border-b-2"
                         }`}
                       >
                         {v ? "True" : "False"}
@@ -346,7 +351,7 @@ export default function QuestPage() {
                     {wasCorrect ? "Nice one!" : "Not quite!"}
                   </div>
                   {level.explanation && (
-                    <p className="mt-1 text-gray-600">{level.explanation}</p>
+                    <p className="mt-1 text-foreground">{level.explanation}</p>
                   )}
                   <ChunkyButton
                     variant={wasCorrect ? "green" : "red"}
@@ -376,7 +381,7 @@ function LoadingScreen({ tipIndex }: { tipIndex: number }) {
         🦚
       </motion.div>
       <h2 className="mt-6 text-2xl font-bold">Mitra is crafting your quest…</h2>
-      <p className="mt-2 h-6 text-gray-400">{LOADING_TIPS[tipIndex]}</p>
+      <p className="mt-2 h-6 text-muted">{LOADING_TIPS[tipIndex]}</p>
     </main>
   );
 }
@@ -386,7 +391,7 @@ function ErrorScreen({ onRetry }: { onRetry: () => void }) {
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
       <div className="text-7xl">🙈</div>
       <h2 className="mt-6 text-2xl font-bold">We couldn&apos;t craft that quest</h2>
-      <p className="mt-2 text-gray-400">Check your connection and try again.</p>
+      <p className="mt-2 text-muted">Check your connection and try again.</p>
       <div className="mt-6 flex gap-3">
         <ChunkyButton onClick={onRetry}>Try again</ChunkyButton>
         <ChunkyButton variant="white" onClick={() => (window.location.href = "/")}>
@@ -409,7 +414,7 @@ function DoneScreen({ results }: { results: Results }) {
         🏆
       </motion.div>
       <h2 className="mt-4 text-3xl font-bold">Quest complete!</h2>
-      <p className="mt-1 text-gray-400">{results.title}</p>
+      <p className="mt-1 text-muted">{results.title}</p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
           <Zap size={18} className="fill-sun text-sun" /> +{results.xp} XP
@@ -417,7 +422,7 @@ function DoneScreen({ results }: { results: Results }) {
         <span className="rounded-full bg-sky-soft px-4 py-2 font-bold text-sky-dark">
           {results.accuracy}% accuracy
         </span>
-        <span className="rounded-full bg-orange-50 px-4 py-2 font-bold text-orange-500">
+        <span className="rounded-full bg-fox-soft px-4 py-2 font-bold text-fox">
           🔥 {results.streak} day{results.streak === 1 ? "" : "s"}
         </span>
       </div>

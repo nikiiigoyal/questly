@@ -7,7 +7,7 @@ const variants: Record<Variant, string> = {
   blue: "bg-sky border-sky-dark text-white",
   red: "bg-berry border-berry-dark text-white",
   sun: "bg-sun border-sun-dark text-white",
-  white: "bg-white border-gray-200 text-foreground",
+  white: "bg-white border-line text-foreground",
 };
 
 /** Duolingo-style chunky button: thick bottom border that collapses on press. */

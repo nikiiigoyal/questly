@@ -1,24 +1,40 @@
 @import "tailwindcss";
 
+/*
+ * Duolingo palette:
+ * Feather #58CC02 / Macaw #1CB0F6 / Cardinal #FF4B4B / Bee #FFC800
+ * Fox #FF9600 / Beetle #CE82FF / Eel #4B4B4B / Wolf #777777 / Swan #E5E5E5
+ */
 @theme {
+  --color-page: #f7f7f7;
   --color-background: #ffffff;
-  --color-foreground: #3c3c3c;
+  --color-foreground: #4b4b4b;
+  --color-muted: #777777;
+  --color-faint: #afafaf;
+  --color-line: #e5e5e5;
 
   --color-brand: #58cc02;
-  --color-brand-dark: #46a302;
-  --color-brand-soft: #e8ffd4;
+  --color-brand-dark: #58a700;
+  --color-brand-soft: #d7ffb8;
 
   --color-sky: #1cb0f6;
   --color-sky-dark: #1899d6;
   --color-sky-soft: #ddf4ff;
 
   --color-berry: #ff4b4b;
-  --color-berry-dark: #d33131;
+  --color-berry-dark: #ea2b2b;
   --color-berry-soft: #ffdfe0;
 
   --color-sun: #ffc800;
-  --color-sun-dark: #e6b000;
+  --color-sun-dark: #e2a500;
   --color-sun-soft: #fff4d4;
+
+  --color-fox: #ff9600;
+  --color-fox-soft: #ffefd9;
+
+  --color-beetle: #ce82ff;
+  --color-beetle-dark: #a560d8;
+  --color-beetle-soft: #f3e8ff;
 
   --font-sans: var(--font-fredoka), ui-rounded, "Segoe UI", system-ui, sans-serif;
 
@@ -58,10 +74,10 @@
 }
 
 body {
-  background: var(--color-background);
+  background: var(--color-page);
   color: var(--color-foreground);
 }
 
 ::selection {
-  background: #d7ffb8;
+  background: var(--color-brand-soft);
 }
