@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🦚 Questly (working name)
 
-## Getting Started
+Search **any** topic → get an instant AI-generated learning quest.
+Duolingo's habit loop — streaks, XP, bite-sized levels — applied to history, geography, culture and general knowledge. Built for the **AI Builders Hackathon 2026**.
 
-First, run the development server:
+## Features
+
+- 🔍 **Search anything** — Gemini turns your topic into a 6-level quest in seconds
+- 📖 **Story cards**, 🧠 **quizzes**, and ✅ **true/false** levels with explanations
+- 🔥 Daily streaks, ⚡ XP, floating rewards and celebration confetti
+- 🔊 Playful synthesized sound effects with a mute toggle (no audio files needed)
+- 📦 Works with **zero setup** thanks to built-in sample quests; add a free API key to unlock any topic
+
+## Tech stack
+
+Next.js (App Router) · TypeScript · Tailwind CSS v4 · Framer Motion · canvas-confetti · Web Audio API (synth SFX) · Google Gemini API (structured JSON output)
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # paste your free GEMINI_API_KEY (https://aistudio.google.com/apikey)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and search a topic.
+Without an API key the app still runs fully on built-in sample quests.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How quest generation works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. The client POSTs your topic to `/api/quest`.
+2. The server prompts Gemini with a strict 6-level plan (story → quiz → story → quiz → true/false → quiz) and a JSON response schema, so the output is always structured and playable.
+3. The response is validated level by level; malformed levels are dropped, and if generation fails entirely we fall back to a sample quest — the game never breaks.
 
-## Learn More
+## Roadmap
 
-To learn more about Next.js, take a look at the following resources:
+- [ ] Wikipedia/Wikidata grounding with a source link on every fact card
+- [ ] Map-tap mini-games for geography quests
+- [ ] Adaptive review quest built from your mistakes (spaced repetition)
+- [ ] Hindi + regional-language quests
+- [ ] Weekly leagues and friend challenges
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Hackathon deliverables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [x] Working product (this app)
+- [ ] Demo video
+- [ ] Presentation deck

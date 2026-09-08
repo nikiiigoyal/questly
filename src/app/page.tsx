@@ -1,69 +1,157 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { ArrowRight, Flame, Search, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
+import ChunkyButton from "@/components/ChunkyButton";
+import { loadProgress, type Progress } from "@/lib/progress";
+import { isMuted, setMuted } from "@/lib/sounds";
+
+const CATEGORIES = [
+  { name: "History", emoji: "🏛️", sample: "Mughal Empire" },
+  { name: "Geography", emoji: "🗺️", sample: "Volcanoes" },
+  { name: "Culture", emoji: "🪔", sample: "Festivals of India" },
+  { name: "Space", emoji: "🚀", sample: "Solar System" },
+  { name: "Science", emoji: "🔬", sample: "Photosynthesis" },
+  { name: "Sports", emoji: "🏆", sample: "Cricket World Cup" },
+];
+
+const TRENDING = [
+  "Volcanoes",
+  "Mughal Empire",
+  "Solar System",
+  "Monsoon",
+  "Taj Mahal",
+  "Great Wall of China",
+];
 
 export default function Home() {
+  const router = useRouter();
+  const [topic, setTopic] = useState("");
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [muted, setMutedState] = useState(false);
+
+  useEffect(() => {
+    setProgress(loadProgress());
+    setMutedState(isMuted());
+  }, []);
+
+  const start = (t: string) => {
+    const clean = t.trim();
+    if (!clean) return;
+    router.push(`/quest?topic=${encodeURIComponent(clean)}`);
+  };
+
+  const toggleSound = () => {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 pb-16">
+      <header className="flex items-center justify-between py-5">
+        <div className="flex items-center gap-1.5 text-2xl font-bold">
+          <span className="text-3xl">🦚</span>
+          <span className="text-brand">quest</span>ly
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+        <button
+          onClick={toggleSound}
+          aria-label="Toggle sound"
+          className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100"
+        >
+          {muted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+        </button>
+      </header>
+
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="pt-4 text-center"
+      >
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-brand to-sky text-5xl shadow-lg shadow-brand/20">
+          🦚
+        </div>
+        <h1 className="mt-4 text-3xl font-bold">Namaste, explorer!</h1>
+        <p className="mx-auto mt-2 max-w-md text-lg text-gray-500">
+          Search anything. Get an instant 5-minute quest. Keep your streak alive.
+        </p>
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <span className="flex items-center gap-1.5 rounded-full bg-orange-50 px-4 py-2 font-bold text-orange-500">
+            <Flame size={18} className="fill-orange-400 text-orange-400" />
+            {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
+          </span>
+          <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
+            <Zap size={18} className="fill-sun text-sun" />
+            {progress?.xp ?? 0} XP
+          </span>
+        </div>
+      </motion.section>
+
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mt-8"
+      >
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && start(topic)}
+              placeholder="Learn about anything… e.g. monsoons"
+              className="w-full rounded-2xl border-2 border-gray-200 bg-white py-4 pl-12 pr-4 text-lg outline-none transition-colors placeholder:text-gray-300 focus:border-brand"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <ChunkyButton onClick={() => start(topic)} aria-label="Generate quest" className="shrink-0">
+            <ArrowRight size={22} />
+          </ChunkyButton>
         </div>
-      </main>
-    </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="flex items-center gap-1 text-sm font-semibold text-gray-400">
+            <Sparkles size={15} /> Trending:
+          </span>
+          {TRENDING.map((t) => (
+            <button
+              key={t}
+              onClick={() => start(t)}
+              className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-200 hover:text-foreground"
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </motion.section>
+
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="mt-10"
+      >
+        <h2 className="mb-3 text-xl font-bold">Pick a world to explore</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.name}
+              onClick={() => start(c.sample)}
+              className="rounded-2xl border-2 border-b-4 border-gray-200 bg-white p-4 text-left transition-all hover:border-gray-300 active:translate-y-[2px] active:border-b-2"
+            >
+              <div className="text-4xl">{c.emoji}</div>
+              <div className="mt-2 font-bold">{c.name}</div>
+              <div className="text-sm text-gray-400">e.g. {c.sample}</div>
+            </button>
+          ))}
+        </div>
+      </motion.section>
+
+      <footer className="mt-12 text-center text-xs text-gray-300">
+        Built for the AI Builders Hackathon 2026 · working name “questly”
+      </footer>
+    </main>
   );
 }

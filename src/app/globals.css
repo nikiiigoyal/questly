@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #3c3c3c;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-brand: #58cc02;
+  --color-brand-dark: #46a302;
+  --color-brand-soft: #e8ffd4;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-sky: #1cb0f6;
+  --color-sky-dark: #1899d6;
+  --color-sky-soft: #ddf4ff;
+
+  --color-berry: #ff4b4b;
+  --color-berry-dark: #d33131;
+  --color-berry-soft: #ffdfe0;
+
+  --color-sun: #ffc800;
+  --color-sun-dark: #e6b000;
+  --color-sun-soft: #fff4d4;
+
+  --font-sans: var(--font-fredoka), ui-rounded, "Segoe UI", system-ui, sans-serif;
+
+  --animate-shake: shake 0.4s ease;
+  --animate-pop: pop 0.3s ease;
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-8px);
+    }
+    40% {
+      transform: translateX(8px);
+    }
+    60% {
+      transform: translateX(-5px);
+    }
+    80% {
+      transform: translateX(5px);
+    }
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+::selection {
+  background: #d7ffb8;
 }
