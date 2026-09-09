@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, CloudUpload, Flame, Search, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
+import { ArrowRight, CloudUpload, Flame, Search, Sparkles, Swords, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import AuthModal from "@/components/AuthModal";
+import ChallengeModal from "@/components/ChallengeModal";
+import IntroSplashScreen from "@/components/IntroSplashScreen";
 import NamasteGreeting from "@/components/NamasteGreeting";
 import { CURRICULUM } from "@/lib/curriculum";
 import { loadProgress, type Progress } from "@/lib/progress";
@@ -40,6 +42,12 @@ export default function Home() {
     typeof window !== "undefined" ? isMuted() : false
   );
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isChallengeOpen, setIsChallengeOpen] = useState(false);
+  // Appears immediately in the beginning on page visit
+  const [isIntroOpen, setIsIntroOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("questly_intro_dismissed") !== "true";
+  });
 
   useEffect(() => {
     void primeSounds();
@@ -53,6 +61,11 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  const handleCloseIntro = () => {
+    sessionStorage.setItem("questly_intro_dismissed", "true");
+    setIsIntroOpen(false);
+  };
 
   const start = (t: string) => {
     playSound("tap");
@@ -77,6 +90,28 @@ export default function Home() {
           <span className="text-brand">quest</span>ly
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              playSound("tap");
+              setIsIntroOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted transition-all hover:border-brand hover:text-brand"
+            title="Watch 3D Intro Splash Animation"
+          >
+            <Sparkles size={14} className="text-sun-dark" />
+            <span className="hidden sm:inline">3D Intro</span>
+          </button>
+          <button
+            onClick={() => {
+              playSound("tap");
+              setIsChallengeOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-full border border-fox/40 bg-fox-soft px-3 py-1.5 text-xs font-bold text-fox transition-all hover:bg-fox hover:text-white"
+            title="Challenge your friends to a 5-minute quest duel"
+          >
+            <Swords size={15} />
+            <span className="hidden sm:inline">Challenge</span>
+          </button>
           <button
             onClick={() => {
               playSound("tap");
@@ -196,8 +231,20 @@ export default function Home() {
         onSyncSuccess={(synced) => setProgress(synced)}
       />
 
+      {/* 3D Intro Splash Screen — persists dismissal so it won't re-open in the same session */}
+      <IntroSplashScreen
+        isOpen={isIntroOpen}
+        onClose={handleCloseIntro}
+      />
+
+      {/* Challenge Friends Modal */}
+      <ChallengeModal
+        isOpen={isChallengeOpen}
+        onClose={() => setIsChallengeOpen(false)}
+      />
+
       <footer className="mt-12 text-center text-xs text-faint">
-        Built for the AI Builders Hackathon 2026 · working name “questly”
+        Built for the AI Builders Hackathon 2026 · working name "questly"
       </footer>
     </main>
   );

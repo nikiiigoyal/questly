@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { ArrowLeft, ArrowRight, Check, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Swords, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import ProgressBar from "@/components/ProgressBar";
 import AuthModal from "@/components/AuthModal";
+import ChallengeModal from "@/components/ChallengeModal";
 import { getCategory, topicAfter } from "@/lib/curriculum";
 import { levelXp, SAMPLE_TOPICS, type Quest, type QuestLevel } from "@/lib/quests";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
@@ -20,6 +21,13 @@ import {
 import { recordQuestComplete } from "@/lib/progress";
 
 type Status = "loading" | "error" | "playing" | "done";
+
+type ChallengeInfo = {
+  isChallenge: boolean;
+  challenger: string;
+  targetScore: number;
+  targetXp: number;
+};
 
 type Results = {
   xp: number;
@@ -58,12 +66,26 @@ export default function QuestPage() {
   const [results, setResults] = useState<Results | null>(null);
   const [catId, setCatId] = useState<string | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isChallengeOpen, setIsChallengeOpen] = useState(false);
+  const [challengeInfo, setChallengeInfo] = useState<ChallengeInfo | null>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("cat");
     setCatId(cat && getCategory(cat) ? cat : null);
+
+    if (params.get("challenge") === "true") {
+      setChallengeInfo({
+        isChallenge: true,
+        challenger: params.get("challenger") || "Your Friend",
+        targetScore: parseInt(params.get("score") || "80", 10),
+        targetXp: parseInt(params.get("xp") || "40", 10),
+      });
+    } else {
+      setChallengeInfo(null);
+    }
+
     const topic =
       params.get("topic")?.trim() ||
       SAMPLE_TOPICS[Math.floor(Math.random() * SAMPLE_TOPICS.length)];
@@ -118,11 +140,20 @@ export default function QuestPage() {
       <>
         <DoneScreen
           results={results}
+          challengeInfo={challengeInfo}
           onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenChallenge={() => setIsChallengeOpen(true)}
         />
         <AuthModal
           isOpen={isAuthOpen}
           onClose={() => setIsAuthOpen(false)}
+        />
+        <ChallengeModal
+          isOpen={isChallengeOpen}
+          onClose={() => setIsChallengeOpen(false)}
+          topic={results.topic}
+          score={results.accuracy}
+          xp={results.xp}
         />
       </>
     );
@@ -265,6 +296,18 @@ export default function QuestPage() {
           {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
         </button>
       </header>
+
+      {challengeInfo?.isChallenge && (
+        <div className="mb-4 flex items-center justify-between rounded-2xl border-2 border-sky/30 bg-sky-soft px-4 py-2.5 text-xs font-bold text-sky-dark">
+          <div className="flex items-center gap-2">
+            <Swords size={16} />
+            <span>Friend Challenge by {challengeInfo.challenger}!</span>
+          </div>
+          <span className="rounded-full bg-white px-2.5 py-0.5 text-foreground shadow-xs">
+            Target: {challengeInfo.targetScore}%
+          </span>
+        </div>
+      )}
 
       {note && (
         <div className="mb-4 flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-beetle-soft px-4 py-2.5 text-center text-sm font-semibold text-beetle-dark">
@@ -454,10 +497,14 @@ function ErrorScreen({ onRetry }: { onRetry: () => void }) {
 
 function DoneScreen({
   results,
+  challengeInfo,
   onOpenAuth,
+  onOpenChallenge,
 }: {
   results: Results;
+  challengeInfo: ChallengeInfo | null;
   onOpenAuth: () => void;
+  onOpenChallenge: () => void;
 }) {
   const router = useRouter();
 
@@ -474,6 +521,30 @@ function DoneScreen({
       <h2 className="mt-4 text-3xl font-bold">Quest complete!</h2>
       <p className="mt-1 text-base text-muted sm:text-lg">{results.title}</p>
 
+      {/* Friend Duel Showdown Result */}
+      {challengeInfo?.isChallenge && (
+        <div
+          className={`mt-5 w-full max-w-md rounded-2xl border-2 p-4 text-center ${
+            results.accuracy >= challengeInfo.targetScore
+              ? "border-brand bg-brand-soft/50 text-brand-dark"
+              : "border-berry bg-berry-soft/50 text-berry-dark"
+          }`}
+        >
+          <div className="flex items-center justify-center gap-2 text-lg font-extrabold">
+            <Swords size={20} />
+            <span>
+              {results.accuracy >= challengeInfo.targetScore
+                ? `YOU DEFEATED ${challengeInfo.challenger.toUpperCase()}!`
+                : `${challengeInfo.challenger.toUpperCase()} STILL LEADS!`}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-foreground">
+            Your score: <strong>{results.accuracy}%</strong> vs {challengeInfo.challenger}&apos;s target:{" "}
+            <strong>{challengeInfo.targetScore}%</strong>
+          </p>
+        </div>
+      )}
+
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark shadow-xs">
           <Zap size={18} className="fill-sun text-sun" /> +{results.xp} XP
@@ -489,6 +560,15 @@ function DoneScreen({
           🔥 {results.streak} day{results.streak === 1 ? "" : "s"} · Save Streak
         </button>
       </div>
+
+      {/* Challenge a Friend Button */}
+      <button
+        onClick={onOpenChallenge}
+        className="mt-6 flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-fox via-sun to-fox py-3.5 text-center text-sm font-extrabold uppercase tracking-wider text-white shadow-lg shadow-fox/25 transition-all hover:brightness-105 active:scale-98"
+      >
+        <Swords size={18} />
+        <span>Challenge Friends On This Topic</span>
+      </button>
 
       {/* Primary Path Continuation (if started from curriculum) */}
       {results.nextTopic && (
