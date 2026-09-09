@@ -23,13 +23,18 @@ const UNIT_STYLES = [
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [progress, setProgress] = useState<Progress | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(() =>
+    typeof window !== "undefined" ? loadProgress() : null
+  );
 
   const category = getCategory(String(id));
 
   useEffect(() => {
     void primeSounds();
-    setProgress(loadProgress());
+    const idTimer = setTimeout(() => {
+      setProgress(loadProgress());
+    }, 0);
+    return () => clearTimeout(idTimer);
   }, [id]);
 
   const doneSet = useMemo(

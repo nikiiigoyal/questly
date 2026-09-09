@@ -40,6 +40,7 @@
 
   --animate-shake: shake 0.4s ease;
   --animate-pop: pop 0.3s ease;
+  --animate-wave: wave 2s infinite ease-in-out;
 
   @keyframes shake {
     0%,
@@ -71,11 +72,32 @@
       transform: scale(1);
     }
   }
+
+  @keyframes wave {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    20% {
+      transform: rotate(14deg);
+    }
+    40% {
+      transform: rotate(-10deg);
+    }
+    60% {
+      transform: rotate(10deg);
+    }
+    80% {
+      transform: rotate(-4deg);
+    }
+  }
 }
 
 body {
   background: var(--color-page);
   color: var(--color-foreground);
+  min-height: 100dvh;
+  background-image: radial-gradient(rgba(88, 204, 2, 0.04) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
 }
 
 ::selection {

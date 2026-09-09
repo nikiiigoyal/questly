@@ -91,8 +91,12 @@ const responseSchema = {
         ],
       },
     },
+    relatedTopics: {
+      type: "ARRAY",
+      items: { type: "STRING" },
+    },
   },
-  required: ["title", "description", "levels"],
+  required: ["title", "description", "levels", "relatedTopics"],
 };
 
 function buildPrompt(topic: string): string {
@@ -104,6 +108,7 @@ function buildPrompt(topic: string): string {
     "- story: a title, one emoji, and 2-3 vivid, simple sentences.",
     "- quiz: a question, 3-4 short options, the 0-based correctIndex, and a 1-2 sentence explanation.",
     "- truefalse: a question, the boolean answer, and a 1-2 sentence explanation.",
+    "- relatedTopics: exactly 3 engaging, curiosity-sparking topics closely related to this one that the learner can explore next.",
     "- Only real, verifiable facts. Simple English a curious teenager enjoys. Encouraging tone.",
     "- Fill EVERY field of every level, even ones a level type doesn't need.",
     "- Output compact JSON — never pad with extra newlines or whitespace.",

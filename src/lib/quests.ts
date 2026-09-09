@@ -29,13 +29,21 @@ export type Quest = {
   emoji: string;
   levels: QuestLevel[];
   generatedBy: "gemini" | "sample";
+  relatedTopics: string[];
 };
 
 export function levelXp(level: QuestLevel): number {
   return level.type === "story" ? 5 : 10;
 }
 
-export const SAMPLE_TOPICS = ["Volcanoes", "Mughal Empire", "Solar System"];
+export const SAMPLE_TOPICS = [
+  "Volcanoes",
+  "Generative AI",
+  "Seven Wonders of the World",
+  "India's Digital Revolution (UPI)",
+  "Mughal Empire",
+  "Solar System",
+];
 
 const SAMPLE_QUESTS: Record<string, Quest> = {
   volcanoes: {
@@ -44,6 +52,11 @@ const SAMPLE_QUESTS: Record<string, Quest> = {
     description: "Why the Earth burps fire — a 6-level quest about volcanoes.",
     emoji: "🌋",
     generatedBy: "sample",
+    relatedTopics: [
+      "Earthquakes & Fault Lines",
+      "Tsunamis & Ocean Surges",
+      "Geysers & Hot Springs",
+    ],
     levels: [
       {
         type: "story",
@@ -96,6 +109,11 @@ const SAMPLE_QUESTS: Record<string, Quest> = {
     description: "Six levels through the rise of the Mughals, from Babur to the Taj Mahal.",
     emoji: "🕌",
     generatedBy: "sample",
+    relatedTopics: [
+      "Taj Mahal & Mughal Architecture",
+      "Akbar the Great",
+      "The Delhi Sultanate",
+    ],
     levels: [
       {
         type: "story",
@@ -148,6 +166,11 @@ const SAMPLE_QUESTS: Record<string, Quest> = {
     description: "Eight planets, one star, and a lot of empty space.",
     emoji: "🪐",
     generatedBy: "sample",
+    relatedTopics: [
+      "Black Holes",
+      "Life as an Astronaut",
+      "ISRO and Indian Space Missions",
+    ],
     levels: [
       {
         type: "story",
@@ -191,6 +214,192 @@ const SAMPLE_QUESTS: Record<string, Quest> = {
         correctIndex: 1,
         explanation:
           "Light travels about 300,000 km every second — the Sun is 150 million km away, so it takes roughly 8 minutes.",
+      },
+    ],
+  },
+  "generative ai": {
+    topic: "Generative AI",
+    title: "Inside the AI Revolution",
+    description: "How machines learned to write, draw, and imagine.",
+    emoji: "🤖",
+    generatedBy: "sample",
+    relatedTopics: [
+      "How ChatGPT & LLMs Work",
+      "Humanoid Robots",
+      "Quantum Computing",
+    ],
+    levels: [
+      {
+        type: "story",
+        title: "When machines learned to imagine",
+        emoji: "💡",
+        text: "For decades, computers could only calculate numbers. But with deep neural networks trained on vast amounts of data, AI learned to predict patterns so accurately that it can now paint art, compose music, and write poems from scratch.",
+      },
+      {
+        type: "quiz",
+        question: "What does 'LLM' stand for in modern AI?",
+        options: [
+          "Logical Learning Machine",
+          "Large Language Model",
+          "Linear Linked Matrix",
+          "Layered Logic Memory",
+        ],
+        correctIndex: 1,
+        explanation:
+          "Large Language Models (LLMs) are AI systems trained on massive amounts of text to understand and generate human-like language.",
+      },
+      {
+        type: "story",
+        title: "Tokens: the currency of thought",
+        emoji: "🧩",
+        text: "AI models don't read whole words like humans do. Instead, they break words down into tiny fragments called tokens. A model predicts what token should come next, one puzzle piece at a time.",
+      },
+      {
+        type: "truefalse",
+        question: "Generative AI truly feels emotions and understands concepts just like a human.",
+        answer: false,
+        explanation:
+          "AI models are statistical pattern predictors — they simulate human understanding brilliantly, but do not possess consciousness or emotions.",
+      },
+      {
+        type: "quiz",
+        question: "What is the famous architecture behind ChatGPT and modern generative models?",
+        options: ["Transformer", "Steam engine", "Transistor", "Relational Database"],
+        correctIndex: 0,
+        explanation:
+          "The Transformer architecture, introduced by researchers in 2017, powers almost all modern frontier language and vision models.",
+      },
+      {
+        type: "quiz",
+        question: "Which field of AI teaches computers to see and understand images and video?",
+        options: ["Audio Engineering", "Computer Vision", "Quantum Mechanics", "Blockchain"],
+        correctIndex: 1,
+        explanation:
+          "Computer Vision enables machines to identify objects, recognise faces, and navigate self-driving cars.",
+      },
+    ],
+  },
+  "seven wonders of the world": {
+    topic: "Seven Wonders of the World",
+    title: "Monuments of Human Genius",
+    description: "The most awe-inspiring architectural marvels on planet Earth.",
+    emoji: "🏛️",
+    generatedBy: "sample",
+    relatedTopics: [
+      "Taj Mahal",
+      "Ancient Egypt",
+      "World's Tallest Buildings",
+    ],
+    levels: [
+      {
+        type: "story",
+        title: "Stones that touched the clouds",
+        emoji: "🗿",
+        text: "Across human history, civilizations built breathtaking monuments that defied physics. The original Seven Wonders were celebrated by ancient Greek travelers, while modern voting in 2007 established the New Seven Wonders.",
+      },
+      {
+        type: "quiz",
+        question: "Which of the original Ancient Seven Wonders is the ONLY one still standing today?",
+        options: [
+          "Hanging Gardens of Babylon",
+          "Great Pyramid of Giza",
+          "Colossus of Rhodes",
+          "Lighthouse of Alexandria",
+        ],
+        correctIndex: 1,
+        explanation:
+          "Built over 4,500 years ago, the Great Pyramid of Giza in Egypt is the only ancient wonder that still stands.",
+      },
+      {
+        type: "story",
+        title: "The marble monument of love",
+        emoji: "🕌",
+        text: "Among the New Seven Wonders of the World is the Taj Mahal in Agra, India. Built with pure white Makrana marble that changes colour from blush pink at dawn to shimmering gold at midnight, it is regarded as a pinnacle of symmetry.",
+      },
+      {
+        type: "truefalse",
+        question: "The Great Wall of China is visible from the Moon with the naked human eye.",
+        answer: false,
+        explanation:
+          "This is a common myth! Astronauts have confirmed it is not visible from the Moon without high-powered optics.",
+      },
+      {
+        type: "quiz",
+        question: "In which country is the ancient mountain citadel of Machu Picchu located?",
+        options: ["Peru", "Mexico", "Chile", "Brazil"],
+        correctIndex: 0,
+        explanation:
+          "Machu Picchu was built high in the Andes mountains of Peru by the Inca civilization in the 15th century.",
+      },
+      {
+        type: "quiz",
+        question: "The ancient city of Petra, carved directly into rose-red desert rock cliffs, is in which country?",
+        options: ["Egypt", "Jordan", "Greece", "Turkey"],
+        correctIndex: 1,
+        explanation:
+          "Petra, the rose-red stone city, is a world-famous archaeological treasure located in southern Jordan.",
+      },
+    ],
+  },
+  "india's digital revolution (upi)": {
+    topic: "India's Digital Revolution (UPI)",
+    title: "The Tap of a QR Code",
+    description: "How India built the world's most successful instant payment network.",
+    emoji: "📲",
+    generatedBy: "sample",
+    relatedTopics: [
+      "Invention of the Internet",
+      "Microchips & Semiconductors",
+      "Cybersecurity Secrets",
+    ],
+    levels: [
+      {
+        type: "story",
+        title: "From paper cash to lightning taps",
+        emoji: "⚡",
+        text: "Just a decade ago, almost every transaction in India required paper notes and coins. Today, street vendors selling chai, large supermarkets, and millions of citizens send money in milliseconds using a simple QR code.",
+      },
+      {
+        type: "quiz",
+        question: "What does 'UPI' stand for?",
+        options: [
+          "Universal Payment Identifier",
+          "Unified Payments Interface",
+          "United Public Infrastructure",
+          "Ultra-fast Private Invoice",
+        ],
+        correctIndex: 1,
+        explanation:
+          "UPI stands for Unified Payments Interface, launched in 2016 by the National Payments Corporation of India (NPCI).",
+      },
+      {
+        type: "story",
+        title: "The magic of interoperability",
+        emoji: "🌐",
+        text: "Unlike walled gardens where you can only send money inside the same app, UPI is open and interoperable. A user on Google Pay or PhonePe can instantly transfer funds to someone using Paytm or any bank app.",
+      },
+      {
+        type: "truefalse",
+        question: "UPI transactions can only be completed during regular banking hours.",
+        answer: false,
+        explanation:
+          "UPI operates 24 hours a day, 7 days a week, 365 days a year in real time.",
+      },
+      {
+        type: "quiz",
+        question: "Roughly what percentage of global real-time digital payments take place in India?",
+        options: ["Around 5%", "Around 15%", "Over 40%", "Over 90%"],
+        correctIndex: 2,
+        explanation:
+          "India accounts for over 45% of all real-time digital payment transactions worldwide!",
+      },
+      {
+        type: "quiz",
+        question: "What public infrastructure backbone powers digital identity and payments in India?",
+        options: ["India Stack", "Crypto Network", "Swift Gateway", "EuroClear"],
+        correctIndex: 0,
+        explanation:
+          "India Stack is the foundational open digital public infrastructure combining Aadhaar, UPI, DigiLocker, and Account Aggregator.",
       },
     ],
   },
@@ -262,6 +471,7 @@ export function normalizeGeminiQuest(raw: unknown, topic: string): Quest {
     description?: unknown;
     emoji?: unknown;
     levels?: unknown;
+    relatedTopics?: unknown;
   };
   const rawLevels: RawLevel[] = Array.isArray(r.levels) ? (r.levels as RawLevel[]) : [];
 
@@ -299,6 +509,24 @@ export function normalizeGeminiQuest(raw: unknown, topic: string): Quest {
     throw new Error("Gemini returned too few valid levels");
   }
 
+  const rawRelated = Array.isArray(r.relatedTopics) ? (r.relatedTopics as unknown[]) : [];
+  let relatedTopics = rawRelated
+    .map((t) => str(t))
+    .filter((t) => t.length > 0 && t.toLowerCase() !== topic.toLowerCase())
+    .slice(0, 3);
+  if (relatedTopics.length < 2) {
+    const defaults = [
+      "Generative AI",
+      "Seven Wonders of the World",
+      "India's Digital Revolution (UPI)",
+      "Solar System",
+      "Quantum Computing",
+    ];
+    relatedTopics = defaults
+      .filter((t) => t.toLowerCase() !== topic.toLowerCase())
+      .slice(0, 3);
+  }
+
   return {
     topic,
     title: str(r.title, topic),
@@ -306,5 +534,6 @@ export function normalizeGeminiQuest(raw: unknown, topic: string): Quest {
     emoji: str(r.emoji, "✨"),
     levels,
     generatedBy: "gemini",
+    relatedTopics,
   };
 }

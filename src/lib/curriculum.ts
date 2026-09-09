@@ -218,6 +218,120 @@ export const CURRICULUM: Category[] = [
       },
     ],
   },
+  {
+    id: "ai-tech",
+    name: "AI & Tech",
+    emoji: "🤖",
+    blurb: "Artificial intelligence, futuristic tech, and the silicon brain revolution.",
+    units: [
+      {
+        name: "Generative AI & LLMs",
+        emoji: "✨",
+        topics: [
+          "Generative AI",
+          "How ChatGPT & LLMs Work",
+          "Prompt Engineering",
+          "AI Ethics & Deepfakes",
+        ],
+      },
+      {
+        name: "Robotics & Autonomous Tech",
+        emoji: "🦾",
+        topics: [
+          "Humanoid Robots",
+          "Self-Driving Cars",
+          "Drones & Flying Tech",
+          "Computer Vision",
+        ],
+      },
+      {
+        name: "Frontiers of Computing",
+        emoji: "⚡",
+        topics: [
+          "Quantum Computing",
+          "Neural Networks",
+          "Microchips & Semiconductors",
+          "Cybersecurity Secrets",
+        ],
+      },
+    ],
+  },
+  {
+    id: "gk",
+    name: "General Knowledge",
+    emoji: "🧠",
+    blurb: "Mind-bending facts, world records, wonders, and quirky curiosities.",
+    units: [
+      {
+        name: "Wonders of the World",
+        emoji: "🏛️",
+        topics: [
+          "Seven Wonders of the World",
+          "Ancient Wonders of the World",
+          "Mysterious Architectural Marvels",
+          "World's Tallest Buildings",
+        ],
+      },
+      {
+        name: "Mind-Blowing Records",
+        emoji: "📜",
+        topics: [
+          "Guinness World Records",
+          "Deepest & Highest Places on Earth",
+          "Oldest Living Things on Earth",
+          "Fastest Machines on Earth",
+        ],
+      },
+      {
+        name: "Everyday Inventions",
+        emoji: "💡",
+        topics: [
+          "Invention of the Internet",
+          "History of the Wheel",
+          "Accidental Scientific Discoveries",
+          "Who Invented Electricity?",
+        ],
+      },
+    ],
+  },
+  {
+    id: "news",
+    name: "Current News & World",
+    emoji: "📰",
+    blurb: "Today's hot headlines, space breakthroughs, climate tech, and global shifts.",
+    units: [
+      {
+        name: "Global Innovations & Trends",
+        emoji: "🚀",
+        topics: [
+          "India's Digital Revolution (UPI)",
+          "Chandrayaan-3 and Lunar Missions",
+          "Electric Vehicles & Clean Energy",
+          "The Global Microchip Race",
+        ],
+      },
+      {
+        name: "Planet & Climate Action",
+        emoji: "🌱",
+        topics: [
+          "Renewable Energy Breakthroughs",
+          "Ocean Cleanup Innovations",
+          "Extreme Weather & Climate Science",
+          "Cities of the Future",
+        ],
+      },
+      {
+        name: "World Summits & Society",
+        emoji: "🌐",
+        topics: [
+          "The United Nations & Global Summits",
+          "Commercial Space Flights",
+          "Future of Digital Payments",
+          "Global Sports Milestones",
+        ],
+      },
+    ],
+  },
 ];
 
 export function getCategory(id: string): Category | undefined {

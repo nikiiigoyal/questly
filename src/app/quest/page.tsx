@@ -4,12 +4,19 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { ArrowLeft, Check, Volume2, VolumeX, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import ProgressBar from "@/components/ProgressBar";
+import AuthModal from "@/components/AuthModal";
 import { getCategory, topicAfter } from "@/lib/curriculum";
 import { levelXp, SAMPLE_TOPICS, type Quest, type QuestLevel } from "@/lib/quests";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
+import {
+  vibrateCelebration,
+  vibrateError,
+  vibrateSuccess,
+  vibrateTap,
+} from "@/lib/haptics";
 import { recordQuestComplete } from "@/lib/progress";
 
 type Status = "loading" | "error" | "playing" | "done";
@@ -22,6 +29,7 @@ type Results = {
   title: string;
   nextTopic: string | null;
   catId: string | null;
+  relatedTopics: string[];
 };
 
 const LOADING_TIPS = [
@@ -44,9 +52,12 @@ export default function QuestPage() {
   const [mistakes, setMistakes] = useState(0);
   const [sessionXp, setSessionXp] = useState(0);
   const [floatXp, setFloatXp] = useState<{ amount: number; key: number } | null>(null);
-  const [muted, setMutedState] = useState(false);
+  const [muted, setMutedState] = useState<boolean>(() =>
+    typeof window !== "undefined" ? isMuted() : false
+  );
   const [results, setResults] = useState<Results | null>(null);
   const [catId, setCatId] = useState<string | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -80,8 +91,10 @@ export default function QuestPage() {
 
   useEffect(() => {
     void primeSounds();
-    setMutedState(isMuted());
-    void load();
+    const timer = setTimeout(() => {
+      void load();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [load]);
 
   useEffect(() => {
@@ -100,7 +113,19 @@ export default function QuestPage() {
 
   if (status === "loading") return <LoadingScreen tipIndex={tipIndex} />;
   if (status === "error") return <ErrorScreen onRetry={() => void load()} />;
-  if (status === "done" && results) return <DoneScreen results={results} />;
+  if (status === "done" && results)
+    return (
+      <>
+        <DoneScreen
+          results={results}
+          onOpenAuth={() => setIsAuthOpen(true)}
+        />
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+        />
+      </>
+    );
 
   if (!quest) return null;
 
@@ -135,9 +160,11 @@ export default function QuestPage() {
     setSelected(i);
     if (i === level.correctIndex) {
       playSound("correct");
+      vibrateSuccess();
       celebrate();
     } else {
       playSound("wrong");
+      vibrateError();
       setMistakes((m) => m + 1);
     }
   };
@@ -147,15 +174,18 @@ export default function QuestPage() {
     setTfChoice(choice);
     if (choice === level.answer) {
       playSound("correct");
+      vibrateSuccess();
       celebrate();
     } else {
       playSound("wrong");
+      vibrateError();
       setMistakes((m) => m + 1);
     }
   };
 
   const nextLevel = () => {
     playSound("tap");
+    vibrateTap();
     const gained = levelXp(level);
     const xp = sessionXp + gained;
     setSessionXp(xp);
@@ -179,9 +209,11 @@ export default function QuestPage() {
         title: quest.title,
         nextTopic: category ? topicAfter(category, quest.topic) : null,
         catId,
+        relatedTopics: quest.relatedTopics ?? [],
       });
       setStatus("done");
       playSound("complete");
+      vibrateCelebration();
       bigCelebration();
     } else {
       setIndex(index + 1);
@@ -404,6 +436,7 @@ function LoadingScreen({ tipIndex }: { tipIndex: number }) {
 }
 
 function ErrorScreen({ onRetry }: { onRetry: () => void }) {
+  const router = useRouter();
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
       <div className="text-7xl">🙈</div>
@@ -411,7 +444,7 @@ function ErrorScreen({ onRetry }: { onRetry: () => void }) {
       <p className="mt-2 text-muted">Check your connection and try again.</p>
       <div className="mt-6 flex gap-3">
         <ChunkyButton onClick={onRetry}>Try again</ChunkyButton>
-        <ChunkyButton variant="white" onClick={() => (window.location.href = "/")}>
+        <ChunkyButton variant="white" onClick={() => router.push("/")}>
           Back home
         </ChunkyButton>
       </div>
@@ -419,9 +452,17 @@ function ErrorScreen({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function DoneScreen({ results }: { results: Results }) {
+function DoneScreen({
+  results,
+  onOpenAuth,
+}: {
+  results: Results;
+  onOpenAuth: () => void;
+}) {
+  const router = useRouter();
+
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col items-center justify-center px-5 py-12 text-center">
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
@@ -431,50 +472,105 @@ function DoneScreen({ results }: { results: Results }) {
         🏆
       </motion.div>
       <h2 className="mt-4 text-3xl font-bold">Quest complete!</h2>
-      <p className="mt-1 text-muted">{results.title}</p>
+      <p className="mt-1 text-base text-muted sm:text-lg">{results.title}</p>
+
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
+        <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark shadow-xs">
           <Zap size={18} className="fill-sun text-sun" /> +{results.xp} XP
         </span>
-        <span className="rounded-full bg-sky-soft px-4 py-2 font-bold text-sky-dark">
+        <span className="rounded-full bg-sky-soft px-4 py-2 font-bold text-sky-dark shadow-xs">
           {results.accuracy}% accuracy
         </span>
-        <span className="rounded-full bg-fox-soft px-4 py-2 font-bold text-fox">
-          🔥 {results.streak} day{results.streak === 1 ? "" : "s"}
-        </span>
+        <button
+          onClick={onOpenAuth}
+          className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox shadow-xs transition-transform hover:scale-105 active:scale-95"
+          title="Save streak to Supabase"
+        >
+          🔥 {results.streak} day{results.streak === 1 ? "" : "s"} · Save Streak
+        </button>
       </div>
-      <div className="mt-8 flex flex-col items-center gap-3">
-        {results.nextTopic && (
+
+      {/* Primary Path Continuation (if started from curriculum) */}
+      {results.nextTopic && (
+        <div className="mt-8 w-full max-w-md">
+          <div className="mb-2 text-left text-xs font-bold uppercase tracking-wider text-muted">
+            Next on Your Path
+          </div>
           <ChunkyButton
-            className="w-full max-w-xs"
+            className="w-full flex items-center justify-center gap-2 text-base"
             onClick={() =>
-              window.location.assign(
+              router.push(
                 `/quest?topic=${encodeURIComponent(results.nextTopic!)}&cat=${results.catId}`
               )
             }
           >
-            Next topic: {results.nextTopic}
-          </ChunkyButton>
-        )}
-        <div className="flex flex-wrap justify-center gap-3">
-          {results.catId && (
-            <ChunkyButton
-              variant="white"
-              onClick={() => (window.location.href = `/category/${results.catId}`)}
-            >
-              Back to path
-            </ChunkyButton>
-          )}
-          <ChunkyButton
-            variant="white"
-            onClick={() => window.location.assign(`/quest?topic=${encodeURIComponent(results.topic)}${results.catId ? `&cat=${results.catId}` : ""}`)}
-          >
-            Replay this quest
-          </ChunkyButton>
-          <ChunkyButton variant="white" onClick={() => (window.location.href = "/")}>
-            Home
+            <span>Continue: {results.nextTopic}</span>
+            <ArrowRight size={18} />
           </ChunkyButton>
         </div>
+      )}
+
+      {/* Engaging Next Topics Recommendations (Continuous learning loop) */}
+      {results.relatedTopics && results.relatedTopics.length > 0 && (
+        <div className="mt-8 w-full max-w-md">
+          <div className="mb-3 flex items-center justify-between text-left">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1">
+              <Sparkles size={14} className="text-brand" /> Explore Next Topics
+            </span>
+            <span className="text-xs font-semibold text-brand-dark">Instant 5-min Quests</span>
+          </div>
+
+          <div className="grid gap-2.5">
+            {results.relatedTopics.map((relTopic, idx) => (
+              <button
+                key={relTopic}
+                onClick={() => router.push(`/quest?topic=${encodeURIComponent(relTopic)}`)}
+                className="group flex items-center justify-between rounded-2xl border-2 border-b-4 border-line bg-white p-4 text-left transition-all hover:border-brand hover:bg-brand-soft/10 active:translate-y-[2px] active:border-b-2"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sun-soft text-xl transition-transform group-hover:scale-110">
+                    {idx === 0 ? "🚀" : idx === 1 ? "💡" : "✨"}
+                  </span>
+                  <div>
+                    <div className="font-bold text-foreground transition-colors group-hover:text-brand-dark">
+                      {relTopic}
+                    </div>
+                    <div className="text-xs text-muted">Jump straight into this quest</div>
+                  </div>
+                </div>
+                <ArrowRight
+                  size={18}
+                  className="shrink-0 text-muted transition-all group-hover:translate-x-1 group-hover:text-brand-dark"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Secondary Actions */}
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        {results.catId && (
+          <ChunkyButton
+            variant="white"
+            onClick={() => router.push(`/category/${results.catId}`)}
+          >
+            Back to path
+          </ChunkyButton>
+        )}
+        <ChunkyButton
+          variant="white"
+          onClick={() =>
+            router.push(
+              `/quest?topic=${encodeURIComponent(results.topic)}${results.catId ? `&cat=${results.catId}` : ""}`
+            )
+          }
+        >
+          Replay this quest
+        </ChunkyButton>
+        <ChunkyButton variant="white" onClick={() => router.push("/")}>
+          Home
+        </ChunkyButton>
       </div>
     </main>
   );

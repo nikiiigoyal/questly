@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Flame, Search, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
+import { ArrowRight, CloudUpload, Flame, Search, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
+import AuthModal from "@/components/AuthModal";
+import NamasteGreeting from "@/components/NamasteGreeting";
 import { CURRICULUM } from "@/lib/curriculum";
 import { loadProgress, type Progress } from "@/lib/progress";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
@@ -17,24 +19,39 @@ const CATEGORIES = CURRICULUM.map((c) => ({
 }));
 
 const TRENDING = [
+  "Generative AI",
+  "Chandrayaan-3",
+  "India's Digital Revolution (UPI)",
+  "Seven Wonders of the World",
+  "Humanoid Robots",
+  "Quantum Computing",
   "Volcanoes",
-  "Mughal Empire",
   "Solar System",
-  "Monsoon",
-  "Taj Mahal",
-  "Great Wall of China",
+  "Mughal Empire",
 ];
 
 export default function Home() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [muted, setMutedState] = useState(false);
+  const [progress, setProgress] = useState<Progress | null>(() =>
+    typeof window !== "undefined" ? loadProgress() : null
+  );
+  const [muted, setMutedState] = useState<boolean>(() =>
+    typeof window !== "undefined" ? isMuted() : false
+  );
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   useEffect(() => {
     void primeSounds();
-    setProgress(loadProgress());
-    setMutedState(isMuted());
+    const current = loadProgress();
+
+    // If user has completed at least 1 quest, gently suggest syncing streak
+    const hasPrompted = sessionStorage.getItem("questly_prompted_sync");
+    if (!hasPrompted && current.questsDone.length >= 1) {
+      sessionStorage.setItem("questly_prompted_sync", "1");
+      const timer = setTimeout(() => setIsAuthOpen(true), 1500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const start = (t: string) => {
@@ -59,38 +76,50 @@ export default function Home() {
           <span className="text-3xl">🦚</span>
           <span className="text-brand">quest</span>ly
         </div>
-        <button
-          onClick={toggleSound}
-          aria-label="Toggle sound"
-          className="rounded-full p-2 text-faint transition-colors hover:bg-line"
-        >
-          {muted ? <VolumeX size={22} /> : <Volume2 size={22} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              playSound("tap");
+              setIsAuthOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-bold text-muted transition-all hover:border-brand hover:text-brand"
+            title="Save streak & cloud records with Supabase"
+          >
+            <CloudUpload size={15} className="text-brand" />
+            <span className="hidden sm:inline">Save Streak</span>
+          </button>
+          <button
+            onClick={toggleSound}
+            aria-label="Toggle sound"
+            className="rounded-full p-2 text-faint transition-colors hover:bg-line"
+          >
+            {muted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+          </button>
+        </div>
       </header>
 
-      <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="pt-4 text-center"
-      >
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-brand to-sky text-5xl shadow-lg shadow-brand/20">
-          🦚
-        </div>
-        <h1 className="mt-4 text-3xl font-bold">Namaste, explorer!</h1>
-        <p className="mx-auto mt-2 max-w-md text-lg text-muted">
-          Search anything. Get an instant 5-minute quest. Keep your streak alive.
-        </p>
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <span className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox">
-            <Flame size={18} className="fill-fox text-fox" />
-            {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
-          </span>
-          <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
-            <Zap size={18} className="fill-sun text-sun" />
-            {progress?.xp ?? 0} XP
-          </span>
-        </div>
-      </motion.section>
+      {/* Animated Namaste Greeting & Mascot Hero */}
+      <NamasteGreeting />
+
+      {/* Interactive Streak and XP Pills */}
+      <div className="mt-4 flex items-center justify-center gap-3">
+        <button
+          onClick={() => {
+            playSound("tap");
+            setIsAuthOpen(true);
+          }}
+          className="group flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox transition-transform hover:scale-105 active:scale-95"
+          title="Click to save streak to Supabase"
+        >
+          <Flame size={18} className="fill-fox text-fox transition-transform group-hover:scale-110" />
+          {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
+          <span className="text-xs font-normal opacity-70">· Save</span>
+        </button>
+        <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
+          <Zap size={18} className="fill-sun text-sun" />
+          {progress?.xp ?? 0} XP
+        </span>
+      </div>
 
       <motion.section
         initial={{ opacity: 0, y: 12 }}
@@ -105,7 +134,7 @@ export default function Home() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && start(topic)}
-              placeholder="Learn about anything… e.g. monsoons"
+              placeholder="Learn about anything… e.g. Generative AI"
               className="w-full rounded-2xl border-2 border-line bg-white py-4 pl-12 pr-4 text-lg outline-none transition-colors placeholder:text-faint focus:border-brand"
             />
           </div>
@@ -122,7 +151,7 @@ export default function Home() {
             <button
               key={t}
               onClick={() => start(t)}
-              className="rounded-full border-2 border-line bg-white px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-faint hover:text-foreground"
+              className="rounded-full border-2 border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-muted transition-all hover:border-brand hover:text-foreground active:scale-95 sm:text-sm"
             >
               {t}
             </button>
@@ -136,7 +165,12 @@ export default function Home() {
         transition={{ delay: 0.15 }}
         className="mt-10"
       >
-        <h2 className="mb-3 text-xl font-bold">Pick a world to explore</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xl font-bold">Pick a world to explore</h2>
+          <span className="text-xs font-bold uppercase tracking-wider text-muted">
+            {CATEGORIES.length} Worlds
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {CATEGORIES.map((c) => (
             <button
@@ -145,15 +179,22 @@ export default function Home() {
                 playSound("tap");
                 router.push(`/category/${c.id}`);
               }}
-              className="rounded-2xl border-2 border-b-4 border-line bg-white p-4 text-left transition-all hover:border-faint active:translate-y-[2px] active:border-b-2"
+              className="group rounded-2xl border-2 border-b-4 border-line bg-white p-4 text-left transition-all hover:border-faint hover:shadow-sm active:translate-y-[2px] active:border-b-2"
             >
-              <div className="text-4xl">{c.emoji}</div>
+              <div className="text-4xl transition-transform group-hover:scale-110">{c.emoji}</div>
               <div className="mt-2 font-bold">{c.name}</div>
               <div className="text-sm text-faint">{c.topics} topics</div>
             </button>
           ))}
         </div>
       </motion.section>
+
+      {/* Gentle Cloud Sync / Streak Auth Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onSyncSuccess={(synced) => setProgress(synced)}
+      />
 
       <footer className="mt-12 text-center text-xs text-faint">
         Built for the AI Builders Hackathon 2026 · working name “questly”
