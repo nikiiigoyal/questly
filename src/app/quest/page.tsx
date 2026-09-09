@@ -7,6 +7,7 @@ import confetti from "canvas-confetti";
 import { ArrowLeft, Check, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import ProgressBar from "@/components/ProgressBar";
+import { getCategory, topicAfter } from "@/lib/curriculum";
 import { levelXp, SAMPLE_TOPICS, type Quest, type QuestLevel } from "@/lib/quests";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
 import { recordQuestComplete } from "@/lib/progress";
@@ -19,6 +20,8 @@ type Results = {
   streak: number;
   topic: string;
   title: string;
+  nextTopic: string | null;
+  catId: string | null;
 };
 
 const LOADING_TIPS = [
@@ -43,10 +46,13 @@ export default function QuestPage() {
   const [floatXp, setFloatXp] = useState<{ amount: number; key: number } | null>(null);
   const [muted, setMutedState] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
+  const [catId, setCatId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
     const params = new URLSearchParams(window.location.search);
+    const cat = params.get("cat");
+    setCatId(cat && getCategory(cat) ? cat : null);
     const topic =
       params.get("topic")?.trim() ||
       SAMPLE_TOPICS[Math.floor(Math.random() * SAMPLE_TOPICS.length)];
@@ -164,12 +170,15 @@ export default function QuestPage() {
           ? 100
           : Math.round(((interactive - mistakes) / interactive) * 100);
       const updated = recordQuestComplete(xp, quest.topic);
+      const category = catId ? getCategory(catId) : undefined;
       setResults({
         xp,
         accuracy,
         streak: updated.streak,
         topic: quest.topic,
         title: quest.title,
+        nextTopic: category ? topicAfter(category, quest.topic) : null,
+        catId,
       });
       setStatus("done");
       playSound("complete");
@@ -190,8 +199,8 @@ export default function QuestPage() {
     <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 pb-44">
       <header className="flex items-center gap-3 py-4">
         <button
-          onClick={() => router.push("/")}
-          aria-label="Back home"
+          onClick={() => router.push(catId ? `/category/${catId}` : "/")}
+          aria-label="Back"
           className="rounded-full p-2 text-faint transition-colors hover:bg-line"
         >
           <ArrowLeft size={22} />
@@ -226,8 +235,16 @@ export default function QuestPage() {
       </header>
 
       {note && (
-        <div className="mb-4 rounded-2xl bg-beetle-soft px-4 py-2.5 text-center text-sm font-semibold text-beetle-dark">
-          {note}
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-beetle-soft px-4 py-2.5 text-center text-sm font-semibold text-beetle-dark">
+          <span>{note}</span>
+          {quest?.generatedBy === "sample" && (
+            <button
+              onClick={() => void load()}
+              className="rounded-full bg-beetle px-3 py-1 text-xs font-bold uppercase tracking-wider text-white"
+            >
+              Try AI again
+            </button>
+          )}
         </div>
       )}
 
@@ -426,16 +443,38 @@ function DoneScreen({ results }: { results: Results }) {
           🔥 {results.streak} day{results.streak === 1 ? "" : "s"}
         </span>
       </div>
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <ChunkyButton onClick={() => (window.location.href = "/")}>
-          Play another topic
-        </ChunkyButton>
-        <ChunkyButton
-          variant="white"
-          onClick={() => window.location.assign(`/quest?topic=${encodeURIComponent(results.topic)}`)}
-        >
-          Replay this quest
-        </ChunkyButton>
+      <div className="mt-8 flex flex-col items-center gap-3">
+        {results.nextTopic && (
+          <ChunkyButton
+            className="w-full max-w-xs"
+            onClick={() =>
+              window.location.assign(
+                `/quest?topic=${encodeURIComponent(results.nextTopic!)}&cat=${results.catId}`
+              )
+            }
+          >
+            Next topic: {results.nextTopic}
+          </ChunkyButton>
+        )}
+        <div className="flex flex-wrap justify-center gap-3">
+          {results.catId && (
+            <ChunkyButton
+              variant="white"
+              onClick={() => (window.location.href = `/category/${results.catId}`)}
+            >
+              Back to path
+            </ChunkyButton>
+          )}
+          <ChunkyButton
+            variant="white"
+            onClick={() => window.location.assign(`/quest?topic=${encodeURIComponent(results.topic)}${results.catId ? `&cat=${results.catId}` : ""}`)}
+          >
+            Replay this quest
+          </ChunkyButton>
+          <ChunkyButton variant="white" onClick={() => (window.location.href = "/")}>
+            Home
+          </ChunkyButton>
+        </div>
       </div>
     </main>
   );

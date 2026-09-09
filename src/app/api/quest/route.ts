@@ -76,7 +76,19 @@ const responseSchema = {
           answer: { type: "BOOLEAN" },
           explanation: { type: "STRING" },
         },
-        required: ["type"],
+        // Every field must be marked required — if only "type" is required,
+        // models under token pressure emit empty {"type":"quiz"} skeletons.
+        required: [
+          "type",
+          "title",
+          "emoji",
+          "text",
+          "question",
+          "options",
+          "correctIndex",
+          "answer",
+          "explanation",
+        ],
       },
     },
   },
@@ -93,6 +105,8 @@ function buildPrompt(topic: string): string {
     "- quiz: a question, 3-4 short options, the 0-based correctIndex, and a 1-2 sentence explanation.",
     "- truefalse: a question, the boolean answer, and a 1-2 sentence explanation.",
     "- Only real, verifiable facts. Simple English a curious teenager enjoys. Encouraging tone.",
+    "- Fill EVERY field of every level, even ones a level type doesn't need.",
+    "- Output compact JSON — never pad with extra newlines or whitespace.",
   ].join("\n");
 }
 

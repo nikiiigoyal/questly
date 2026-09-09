@@ -5,17 +5,16 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Flame, Search, Sparkles, Volume2, VolumeX, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
+import { CURRICULUM } from "@/lib/curriculum";
 import { loadProgress, type Progress } from "@/lib/progress";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
 
-const CATEGORIES = [
-  { name: "History", emoji: "🏛️", sample: "Mughal Empire" },
-  { name: "Geography", emoji: "🗺️", sample: "Volcanoes" },
-  { name: "Culture", emoji: "🪔", sample: "Festivals of India" },
-  { name: "Space", emoji: "🚀", sample: "Solar System" },
-  { name: "Science", emoji: "🔬", sample: "Photosynthesis" },
-  { name: "Sports", emoji: "🏆", sample: "Cricket World Cup" },
-];
+const CATEGORIES = CURRICULUM.map((c) => ({
+  id: c.id,
+  name: c.name,
+  emoji: c.emoji,
+  topics: c.units.reduce((n, u) => n + u.topics.length, 0),
+}));
 
 const TRENDING = [
   "Volcanoes",
@@ -141,13 +140,16 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {CATEGORIES.map((c) => (
             <button
-              key={c.name}
-              onClick={() => start(c.sample)}
+              key={c.id}
+              onClick={() => {
+                playSound("tap");
+                router.push(`/category/${c.id}`);
+              }}
               className="rounded-2xl border-2 border-b-4 border-line bg-white p-4 text-left transition-all hover:border-faint active:translate-y-[2px] active:border-b-2"
             >
               <div className="text-4xl">{c.emoji}</div>
               <div className="mt-2 font-bold">{c.name}</div>
-              <div className="text-sm text-faint">e.g. {c.sample}</div>
+              <div className="text-sm text-faint">{c.topics} topics</div>
             </button>
           ))}
         </div>

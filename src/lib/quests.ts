@@ -230,13 +230,13 @@ function normalizeQuiz(l: RawLevel): QuizLevel | null {
     : [];
   if (options.length < 2) return null;
 
-  let idx =
-    typeof l?.correctIndex === "number" ? Math.round(l.correctIndex) : -1;
+  // Some models return the index as a string; coerce both shapes.
+  let idx = l?.correctIndex != null ? Math.round(Number(l.correctIndex)) : -1;
+  if (!Number.isFinite(idx)) idx = -1;
   if (idx < 0 || idx >= options.length) {
     // Some models return the answer as text instead of an index — try to match it.
     const answerText = str(l?.answer).toLowerCase();
-    const matched = options.findIndex((o) => o.toLowerCase() === answerText);
-    idx = matched;
+    idx = options.findIndex((o) => o.toLowerCase() === answerText);
   }
   if (idx < 0 || idx >= options.length) return null;
 
@@ -248,6 +248,8 @@ function normalizeQuiz(l: RawLevel): QuizLevel | null {
     explanation: str(l?.explanation),
   };
 }
+
+const asBool = (v: unknown): boolean => v === true || v === "true" || v === "True";
 
 /**
  * Validates and repairs the JSON Gemini returns, level by level. Anything
@@ -280,7 +282,7 @@ export function normalizeGeminiQuest(raw: unknown, topic: string): Quest {
       levels.push({
         type: "truefalse",
         question: str(l?.question),
-        answer: l?.answer === true,
+        answer: asBool(l?.answer),
         explanation: str(l?.explanation),
       });
     }

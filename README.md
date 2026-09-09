@@ -5,11 +5,13 @@ Duolingo's habit loop — streaks, XP, bite-sized levels — applied to history,
 
 ## Features
 
-- 🔍 **Search anything** — Gemini turns your topic into a 6-level quest in seconds
+- 📚 **Structured curriculum** — 6 worlds (History, Geography, Culture, Space, Science, Sports) → units like Ancient/Medieval/Modern India → 80+ topics in a Duolingo-style learning path with progress tracking
+- 🔍 **Search anything** — Gemini turns *any* topic into a quest in seconds, even ones not in the curriculum
+- 🔁 **Next topic flow** — finish a quest and continue straight to the next topic in the path
 - 📖 **Story cards**, 🧠 **quizzes**, and ✅ **true/false** levels with explanations
 - 🔥 Daily streaks, ⚡ XP, floating rewards and celebration confetti
-- 🔊 Playful synthesized sound effects with a mute toggle (no audio files needed)
-- 📦 Works with **zero setup** thanks to built-in sample quests; add a free API key to unlock any topic
+- 🔊 Synthesized sound effects (tap / correct / wrong / fanfare) with a mute toggle
+- 🛡️ **Resilient AI pipeline** — header auth for new-format keys, live model discovery with retry + backoff across Gemini models, JSON-schema validation, successful quests cached in memory, and sample-quest fallback so the demo never breaks
 
 ## Tech stack
 
