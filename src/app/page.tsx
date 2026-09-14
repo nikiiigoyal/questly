@@ -37,12 +37,8 @@ const TRENDING = [
 export default function Home() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
-  const [progress, setProgress] = useState<Progress | null>(() =>
-    typeof window !== "undefined" ? loadProgress() : null
-  );
-  const [muted, setMutedState] = useState<boolean>(() =>
-    typeof window !== "undefined" ? isMuted() : false
-  );
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [muted, setMutedState] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
   const { email: authEmail, signOut } = useAuthUser();
@@ -54,15 +50,24 @@ export default function Home() {
 
   useEffect(() => {
     void primeSounds();
-    const current = loadProgress();
+    // Deferred so the first client render matches the server (no hydration
+    // mismatch when localStorage already has progress).
+    const id = window.setTimeout(() => {
+      setProgress(loadProgress());
+      setMutedState(isMuted());
+    }, 0);
 
     // If user has completed at least 1 quest, gently suggest syncing streak
     const hasPrompted = sessionStorage.getItem("questly_prompted_sync");
-    if (!hasPrompted && current.questsDone.length >= 1) {
+    if (!hasPrompted && loadProgress().questsDone.length >= 1) {
       sessionStorage.setItem("questly_prompted_sync", "1");
       const timer = setTimeout(() => setIsAuthOpen(true), 1500);
-      return () => clearTimeout(timer);
+      return () => {
+        window.clearTimeout(id);
+        clearTimeout(timer);
+      };
     }
+    return () => window.clearTimeout(id);
   }, []);
 
   const handleCloseIntro = () => {

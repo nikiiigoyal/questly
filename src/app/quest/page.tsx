@@ -62,9 +62,7 @@ export default function QuestPage() {
   const [mistakes, setMistakes] = useState(0);
   const [sessionXp, setSessionXp] = useState(0);
   const [floatXp, setFloatXp] = useState<{ amount: number; key: number } | null>(null);
-  const [muted, setMutedState] = useState<boolean>(() =>
-    typeof window !== "undefined" ? isMuted() : false
-  );
+  const [muted, setMutedState] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [catId, setCatId] = useState<string | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -115,10 +113,16 @@ export default function QuestPage() {
 
   useEffect(() => {
     void primeSounds();
+    // Deferred so the first client render matches the server (no hydration
+    // mismatch from localStorage-backed state like the mute flag).
+    const id = window.setTimeout(() => setMutedState(isMuted()), 0);
     const timer = setTimeout(() => {
       void load();
     }, 0);
-    return () => clearTimeout(timer);
+    return () => {
+      window.clearTimeout(id);
+      clearTimeout(timer);
+    };
   }, [load]);
 
   useEffect(() => {

@@ -23,18 +23,18 @@ const UNIT_STYLES = [
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [progress, setProgress] = useState<Progress | null>(() =>
-    typeof window !== "undefined" ? loadProgress() : null
-  );
+  const [progress, setProgress] = useState<Progress | null>(null);
 
   const category = getCategory(String(id));
 
   useEffect(() => {
     void primeSounds();
-    const idTimer = setTimeout(() => {
+    // Deferred so the first client render matches the server (no hydration
+    // mismatch when localStorage already has progress).
+    const idTimer = window.setTimeout(() => {
       setProgress(loadProgress());
     }, 0);
-    return () => clearTimeout(idTimer);
+    return () => window.clearTimeout(idTimer);
   }, [id]);
 
   const doneSet = useMemo(
