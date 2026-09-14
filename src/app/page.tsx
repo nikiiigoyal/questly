@@ -278,9 +278,7 @@ export default function Home() {
         onClose={() => setIsChallengeOpen(false)}
       />
 
-      <footer className="mt-12 text-center text-xs text-faint">
-        Built for the AI Builders Hackathon 2026 · working name &quot;questly&quot;
-      </footer>
+      
     </main>
   );
 }
