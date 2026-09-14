@@ -9,6 +9,7 @@ import AuthModal from "@/components/AuthModal";
 import ChallengeModal from "@/components/ChallengeModal";
 import IntroSplashScreen from "@/components/IntroSplashScreen";
 import NamasteGreeting from "@/components/NamasteGreeting";
+import SubjectAvatar from "@/components/SubjectAvatar";
 import UserAvatar from "@/components/UserAvatar";
 import { useAuthUser } from "@/lib/authUser";
 import { CURRICULUM } from "@/lib/curriculum";
@@ -41,7 +42,7 @@ export default function Home() {
   const [muted, setMutedState] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
-  const { email: authEmail, signOut } = useAuthUser();
+  const { email: authEmail } = useAuthUser();
   // Appears immediately in the beginning on page visit
   const [isIntroOpen, setIsIntroOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -123,10 +124,11 @@ export default function Home() {
           {authEmail ? (
             <button
               onClick={() => {
-                if (window.confirm(`Signed in as ${authEmail}\nSign out?`)) void signOut();
+                playSound("tap");
+                router.push("/profile");
               }}
               className="flex items-center gap-1.5 rounded-full border border-line bg-white p-1 pr-3 transition-all hover:border-brand"
-              title={`Signed in as ${authEmail} · Click to sign out`}
+              title="Your explorer profile"
             >
               <UserAvatar email={authEmail} className="h-7 w-7 text-[11px]" />
               <span className="hidden max-w-24 truncate text-xs font-bold text-muted sm:inline">
@@ -240,7 +242,7 @@ export default function Home() {
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {CATEGORIES.map((c) => (
+          {CATEGORIES.map((c, i) => (
             <button
               key={c.id}
               onClick={() => {
@@ -249,7 +251,7 @@ export default function Home() {
               }}
               className="group rounded-2xl border-2 border-b-4 border-line bg-white p-4 text-left transition-all hover:border-faint hover:shadow-sm active:translate-y-[2px] active:border-b-2"
             >
-              <div className="text-4xl transition-transform group-hover:scale-110">{c.emoji}</div>
+              <SubjectAvatar id={c.id} emoji={c.emoji} index={i} />
               <div className="mt-2 font-bold">{c.name}</div>
               <div className="text-sm text-faint">{c.topics} topics</div>
             </button>

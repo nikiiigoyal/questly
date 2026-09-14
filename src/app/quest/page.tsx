@@ -560,13 +560,14 @@ function DoneScreen({
           {results.accuracy}% accuracy
         </span>
         {authEmail ? (
-          <span
-            className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox shadow-xs"
-            title={`Streak saved as ${authEmail}`}
+          <button
+            onClick={() => router.push("/profile")}
+            className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox shadow-xs transition-transform hover:scale-105 active:scale-95"
+            title={`See your explorer profile · ${authEmail}`}
           >
             <UserAvatar email={authEmail} className="h-6 w-6 text-[10px]" />
             🔥 {results.streak} day{results.streak === 1 ? "" : "s"}
-          </span>
+          </button>
         ) : (
           <button
             onClick={onOpenAuth}

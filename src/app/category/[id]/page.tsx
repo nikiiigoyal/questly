@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Check, ChevronRight, Play } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import ProgressBar from "@/components/ProgressBar";
+import SubjectAvatar from "@/components/SubjectAvatar";
 import { getCategory, nextUpTopic } from "@/lib/curriculum";
 import { loadProgress, type Progress } from "@/lib/progress";
 import { playSound, primeSounds } from "@/lib/sounds";
@@ -75,8 +76,9 @@ export default function CategoryPage() {
         >
           <ArrowLeft size={22} />
         </button>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <span className="text-3xl">{category.emoji}</span> {category.name}
+        <h1 className="flex items-center gap-2.5 text-2xl font-bold">
+          <SubjectAvatar id={category.id} emoji={category.emoji} className="h-12 w-12 text-2xl" />
+          {category.name}
         </h1>
       </header>
 
