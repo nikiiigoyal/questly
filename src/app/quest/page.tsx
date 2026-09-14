@@ -9,6 +9,8 @@ import ChunkyButton from "@/components/ChunkyButton";
 import ProgressBar from "@/components/ProgressBar";
 import AuthModal from "@/components/AuthModal";
 import ChallengeModal from "@/components/ChallengeModal";
+import UserAvatar from "@/components/UserAvatar";
+import { useAuthUser } from "@/lib/authUser";
 import { getCategory, topicAfter } from "@/lib/curriculum";
 import { levelXp, SAMPLE_TOPICS, type Quest, type QuestLevel } from "@/lib/quests";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
@@ -507,6 +509,7 @@ function DoneScreen({
   onOpenChallenge: () => void;
 }) {
   const router = useRouter();
+  const { email: authEmail } = useAuthUser();
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col items-center justify-center px-5 py-12 text-center">
@@ -552,13 +555,23 @@ function DoneScreen({
         <span className="rounded-full bg-sky-soft px-4 py-2 font-bold text-sky-dark shadow-xs">
           {results.accuracy}% accuracy
         </span>
-        <button
-          onClick={onOpenAuth}
-          className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox shadow-xs transition-transform hover:scale-105 active:scale-95"
-          title="Save streak to Supabase"
-        >
-          🔥 {results.streak} day{results.streak === 1 ? "" : "s"} · Save Streak
-        </button>
+        {authEmail ? (
+          <span
+            className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox shadow-xs"
+            title={`Streak saved as ${authEmail}`}
+          >
+            <UserAvatar email={authEmail} className="h-6 w-6 text-[10px]" />
+            🔥 {results.streak} day{results.streak === 1 ? "" : "s"}
+          </span>
+        ) : (
+          <button
+            onClick={onOpenAuth}
+            className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox shadow-xs transition-transform hover:scale-105 active:scale-95"
+            title="Save streak to Supabase"
+          >
+            🔥 {results.streak} day{results.streak === 1 ? "" : "s"} · Save Streak
+          </button>
+        )}
       </div>
 
       {/* Challenge a Friend Button */}

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Flame, Lock, Mail, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
 import ChunkyButton from "@/components/ChunkyButton";
 import { loadProgress, saveProgress, type Progress } from "@/lib/progress";
+import { rememberAuthEmail } from "@/lib/authUser";
 import {
   isSupabaseConfigured,
   loadProgressFromSupabase,
@@ -43,10 +44,11 @@ export default function AuthModal({
     }
 
     if (!isSupabaseConfigured || !supabase) {
-      // Demo preview simulation
+      // Demo preview simulation — still remember the email so the avatar shows.
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
+        rememberAuthEmail(email.trim());
         setSuccessMsg(
           "Demo mode: Progress saved locally! Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local for live cloud sync."
         );
@@ -67,6 +69,7 @@ export default function AuthModal({
         if (error) throw error;
         if (data.user) {
           await saveProgressToSupabase(data.user, localProgress);
+          rememberAuthEmail(data.user.email ?? email.trim());
           setSuccessMsg("Account created! Your streak and XP are saved to the cloud.");
           onSyncSuccess?.(localProgress);
           setTimeout(onClose, 1600);
@@ -78,6 +81,7 @@ export default function AuthModal({
         });
         if (error) throw error;
         if (data.user) {
+          rememberAuthEmail(data.user.email ?? email.trim());
           // Sync existing remote progress if any
           const { progress: remoteProgress } = await loadProgressFromSupabase(data.user);
           let merged = localProgress;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Dices, Languages, Palette, Sparkles } from "lucide-react";
+import { Languages, Sparkles } from "lucide-react";
 import { playSound } from "@/lib/sounds";
 import { vibrateTap } from "@/lib/haptics";
 
@@ -61,6 +61,17 @@ export default function NamasteGreeting() {
   const [lang, setLang] = useState<"hi" | "en">("hi");
   const [paletteIndex, setPaletteIndex] = useState(0);
 
+  // A fresh vibe on every visit — random slogan + palette, no UI for it.
+  // Picked after mount in a macro-task: keeps SSR HTML identical to the first
+  // client render (no hydration mismatch) and out of the effect's sync pass.
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setHookIndex(Math.floor(Math.random() * HOOKS.length));
+      setPaletteIndex(Math.floor(Math.random() * PALETTES.length));
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // Auto-flip from Hindi to English on first load after 3.5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,18 +86,6 @@ export default function NamasteGreeting() {
     setLang((prev) => (prev === "hi" ? "en" : "hi"));
   };
 
-  const nextHook = () => {
-    playSound("tap");
-    vibrateTap();
-    setHookIndex((prev) => (prev + 1) % HOOKS.length);
-  };
-
-  const cyclePalette = () => {
-    playSound("tap");
-    vibrateTap();
-    setPaletteIndex((prev) => (prev + 1) % PALETTES.length);
-  };
-
   const activePalette = PALETTES[paletteIndex];
   const activeHook = HOOKS[hookIndex];
 
@@ -97,17 +96,8 @@ export default function NamasteGreeting() {
         className={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 h-56 w-full max-w-lg rounded-full bg-gradient-to-b ${activePalette.gradient} blur-3xl opacity-80 transition-all duration-700`}
       />
 
-      {/* Top micro controls: Slogan Shuffle, Language toggle & Palette switch */}
+      {/* Top micro controls: language toggle */}
       <div className="relative mb-3 flex flex-wrap items-center justify-center gap-2">
-        <button
-          onClick={nextHook}
-          className="flex items-center gap-1.5 rounded-full border border-line bg-white/90 px-3 py-1 text-xs font-bold text-muted backdrop-blur-xs transition-all hover:border-fox hover:text-fox"
-          title="Shuffle to another fun slogan"
-        >
-          <Dices size={14} className="text-fox" />
-          <span>Shuffle Vibe</span>
-        </button>
-
         <button
           onClick={toggleLanguage}
           className="flex items-center gap-1.5 rounded-full border border-line bg-white/90 px-3 py-1 text-xs font-bold text-muted backdrop-blur-xs transition-all hover:border-brand hover:text-brand"
@@ -115,15 +105,6 @@ export default function NamasteGreeting() {
         >
           <Languages size={14} />
           {lang === "hi" ? "हिंदी (Hindi)" : "English"}
-        </button>
-
-        <button
-          onClick={cyclePalette}
-          className="flex items-center gap-1.5 rounded-full border border-line bg-white/90 px-3 py-1 text-xs font-bold text-muted backdrop-blur-xs transition-all hover:border-sky hover:text-sky"
-          title="Switch theme accent"
-        >
-          <Palette size={14} />
-          <span>Theme</span>
         </button>
       </div>
 

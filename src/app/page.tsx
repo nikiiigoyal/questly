@@ -9,6 +9,8 @@ import AuthModal from "@/components/AuthModal";
 import ChallengeModal from "@/components/ChallengeModal";
 import IntroSplashScreen from "@/components/IntroSplashScreen";
 import NamasteGreeting from "@/components/NamasteGreeting";
+import UserAvatar from "@/components/UserAvatar";
+import { useAuthUser } from "@/lib/authUser";
 import { CURRICULUM } from "@/lib/curriculum";
 import { loadProgress, type Progress } from "@/lib/progress";
 import { isMuted, playSound, primeSounds, setMuted } from "@/lib/sounds";
@@ -43,6 +45,7 @@ export default function Home() {
   );
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
+  const { email: authEmail, signOut } = useAuthUser();
   // Appears immediately in the beginning on page visit
   const [isIntroOpen, setIsIntroOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -112,17 +115,32 @@ export default function Home() {
             <Swords size={15} />
             <span className="hidden sm:inline">Challenge</span>
           </button>
-          <button
-            onClick={() => {
-              playSound("tap");
-              setIsAuthOpen(true);
-            }}
-            className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-bold text-muted transition-all hover:border-brand hover:text-brand"
-            title="Save streak & cloud records with Supabase"
-          >
-            <CloudUpload size={15} className="text-brand" />
-            <span className="hidden sm:inline">Save Streak</span>
-          </button>
+          {authEmail ? (
+            <button
+              onClick={() => {
+                if (window.confirm(`Signed in as ${authEmail}\nSign out?`)) void signOut();
+              }}
+              className="flex items-center gap-1.5 rounded-full border border-line bg-white p-1 pr-3 transition-all hover:border-brand"
+              title={`Signed in as ${authEmail} · Click to sign out`}
+            >
+              <UserAvatar email={authEmail} className="h-7 w-7 text-[11px]" />
+              <span className="hidden max-w-24 truncate text-xs font-bold text-muted sm:inline">
+                {authEmail.split("@")[0]}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                playSound("tap");
+                setIsAuthOpen(true);
+              }}
+              className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-bold text-muted transition-all hover:border-brand hover:text-brand"
+              title="Save streak & cloud records with Supabase"
+            >
+              <CloudUpload size={15} className="text-brand" />
+              <span className="hidden sm:inline">Save Streak</span>
+            </button>
+          )}
           <button
             onClick={toggleSound}
             aria-label="Toggle sound"
@@ -138,18 +156,28 @@ export default function Home() {
 
       {/* Interactive Streak and XP Pills */}
       <div className="mt-4 flex items-center justify-center gap-3">
-        <button
-          onClick={() => {
-            playSound("tap");
-            setIsAuthOpen(true);
-          }}
-          className="group flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox transition-transform hover:scale-105 active:scale-95"
-          title="Click to save streak to Supabase"
-        >
-          <Flame size={18} className="fill-fox text-fox transition-transform group-hover:scale-110" />
-          {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
-          <span className="text-xs font-normal opacity-70">· Save</span>
-        </button>
+        {authEmail ? (
+          <span
+            className="flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox"
+            title="Streak saved to your account"
+          >
+            <Flame size={18} className="fill-fox text-fox" />
+            {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
+          </span>
+        ) : (
+          <button
+            onClick={() => {
+              playSound("tap");
+              setIsAuthOpen(true);
+            }}
+            className="group flex items-center gap-1.5 rounded-full bg-fox-soft px-4 py-2 font-bold text-fox transition-transform hover:scale-105 active:scale-95"
+            title="Click to save streak to Supabase"
+          >
+            <Flame size={18} className="fill-fox text-fox transition-transform group-hover:scale-110" />
+            {progress?.streak ?? 0} day{progress?.streak === 1 ? "" : "s"}
+            <span className="text-xs font-normal opacity-70">· Save</span>
+          </button>
+        )}
         <span className="flex items-center gap-1.5 rounded-full bg-sun-soft px-4 py-2 font-bold text-sun-dark">
           <Zap size={18} className="fill-sun text-sun" />
           {progress?.xp ?? 0} XP
@@ -244,7 +272,7 @@ export default function Home() {
       />
 
       <footer className="mt-12 text-center text-xs text-faint">
-        Built for the AI Builders Hackathon 2026 · working name "questly"
+        Built for the AI Builders Hackathon 2026 · working name &quot;questly&quot;
       </footer>
     </main>
   );

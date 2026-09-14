@@ -53,6 +53,7 @@ export default function IntroSplashScreen({ isOpen, onClose }: IntroSplashProps)
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
+          onClick={onClose}
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
         >
           {/* Ambient 3D background light orbs */}
@@ -70,10 +71,11 @@ export default function IntroSplashScreen({ isOpen, onClose }: IntroSplashProps)
             <X size={15} />
           </button>
 
-          {/* 3D Viewport with Perspective */}
+          {/* 3D Viewport with Perspective (clicks inside the card never close it) */}
           <div
             className="relative w-full max-w-lg"
             style={{ perspective: 1200 }}
+            onClick={(e) => e.stopPropagation()}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >

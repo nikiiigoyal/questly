@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, MessageCircle, Share2, Swords, Trophy, Users, X, Zap } from "lucide-react";
-import ChunkyButton from "@/components/ChunkyButton";
+import { Check, Copy, MessageCircle, Share2, Trophy, X, Zap } from "lucide-react";
 import { playSound } from "@/lib/sounds";
 import { vibrateSuccess, vibrateTap } from "@/lib/haptics";
 
