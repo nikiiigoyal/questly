@@ -470,7 +470,7 @@ export default function QuestPage() {
 
 function LoadingScreen({ tipIndex }: { tipIndex: number }) {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
+    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center px-5 pb-16 text-center">
       <motion.div
         animate={{ y: [0, -12, 0] }}
         transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
@@ -480,9 +480,24 @@ function LoadingScreen({ tipIndex }: { tipIndex: number }) {
       </motion.div>
       <h2 className="mt-6 text-2xl font-bold">Mitra is crafting your quest…</h2>
       <p className="mt-2 h-6 text-muted">{LOADING_TIPS[tipIndex]}</p>
+
+      {/* Skeleton preview — gives a sense of the quest being built */}
+      <div className="mt-8 w-full rounded-3xl border-2 border-line bg-white p-6 text-left sm:p-8">
+        <div className="animate-pulse rounded-2xl bg-line mx-auto h-14 w-14" aria-hidden />
+        <div className="animate-pulse rounded-xl bg-line mx-auto mt-4 h-7 w-2/3" aria-hidden />
+        <div className="animate-pulse rounded-xl bg-line mt-3 h-4 w-full" aria-hidden />
+        <div className="animate-pulse rounded-xl bg-line mt-2 h-4 w-5/6" aria-hidden />
+        <div className="mt-6 grid gap-3">
+          <div className="animate-pulse rounded-2xl bg-line h-14 w-full" aria-hidden />
+          <div className="animate-pulse rounded-2xl bg-line h-14 w-full" aria-hidden />
+          <div className="animate-pulse rounded-2xl bg-line h-14 w-full" aria-hidden />
+        </div>
+        <div className="animate-pulse rounded-2xl bg-line mt-6 h-12 w-full" aria-hidden />
+      </div>
     </main>
   );
 }
+
 
 function ErrorScreen({ onRetry }: { onRetry: () => void }) {
   const router = useRouter();

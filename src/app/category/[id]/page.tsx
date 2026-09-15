@@ -55,6 +55,28 @@ export default function CategoryPage() {
     );
   }
 
+  // Progress is loaded async from localStorage — show a skeleton while we wait.
+  if (!progress) {
+    return (
+      <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 pb-16">
+        <header className="flex items-center gap-3 py-4">
+          <div className="animate-pulse rounded-full bg-line h-10 w-10" aria-hidden />
+          <div className="animate-pulse rounded-xl bg-line h-9 w-52" aria-hidden />
+        </header>
+        <div className="animate-pulse rounded-xl bg-line mx-auto h-5 w-3/4" aria-hidden />
+        <div className="animate-pulse rounded-2xl bg-line mt-4 h-20 w-full" aria-hidden />
+        <div className="animate-pulse rounded-3xl bg-line mt-5 h-24 w-full" aria-hidden />
+        <div className="animate-pulse rounded-2xl bg-line mt-8 h-12 w-full" aria-hidden />
+        <div className="mt-3 grid gap-2.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="animate-pulse rounded-2xl bg-line h-[68px] w-full" aria-hidden />
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+
   const startTopic = (topic: string) => {
     playSound("tap");
     router.push(`/quest?topic=${encodeURIComponent(topic)}&cat=${category.id}`);

@@ -103,3 +103,25 @@ body {
 ::selection {
   background: var(--color-brand-soft);
 }
+
+/* ── Pointer hand on everything interactive ─────────────── */
+a,
+button,
+[role="button"],
+summary,
+select,
+label[for] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+input[type="text"],
+input[type="search"],
+textarea {
+  cursor: text;
+}
+

@@ -54,6 +54,39 @@ export default function ProfilePage() {
   const questsDone = progress?.questsDone.length ?? 0;
   const worldsExplored = stats.curriculumTopics.filter((s) => s.doneTopics.length > 0).length;
 
+  // Progress is loaded async from localStorage — show skeleton while we wait.
+  if (!progress) {
+    return (
+      <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 pb-16">
+        <header className="flex items-center gap-3 py-4">
+          <div className="animate-pulse rounded-full bg-line h-10 w-10" aria-hidden />
+          <div className="animate-pulse rounded-xl bg-line h-9 w-52" aria-hidden />
+        </header>
+        {/* Identity card skeleton */}
+        <div className="animate-pulse rounded-3xl border-2 border-line bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-line h-16 w-16" aria-hidden />
+            <div className="flex-1 space-y-2">
+              <div className="rounded-xl bg-line h-5 w-40" aria-hidden />
+              <div className="rounded-xl bg-line h-4 w-32" aria-hidden />
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="rounded-2xl bg-line h-16" aria-hidden />
+            <div className="rounded-2xl bg-line h-16" aria-hidden />
+            <div className="rounded-2xl bg-line h-16" aria-hidden />
+          </div>
+        </div>
+        {/* Subject rows skeleton */}
+        <div className="mt-6 space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="animate-pulse rounded-3xl border-2 border-line bg-white p-4 h-20" aria-hidden />
+          ))}
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 pb-16">
       <header className="flex items-center gap-3 py-4">
